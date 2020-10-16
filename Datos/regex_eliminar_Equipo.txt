@@ -1,0 +1,3 @@
+Regex borrar equipo
+
+.*AD Ceuta.*\r?\n
