@@ -2,8 +2,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from numpy import linalg as LA
 from numpy import array as ARR
+from numpy import random as R
+from numpy import asanyarray as asr
+
 import pylab as pl
 from sklearn import preprocessing
+from sklearn import linear_model
 import time
 import requests
 import lxml.html as lh
@@ -17,6 +21,7 @@ class Apuestas:
 	Model_Data=''
 	Datos_Corregidos=''
 	Encuentro_posible=False
+	Resultados_predecidos={}
 	Advertencia=''
 	Equipo_Local={'Nombre':'',
 				  'id':0,
@@ -134,7 +139,7 @@ class Apuestas:
 		self.check_encuentro()
 
 
-	def gen_intervalos(Diccionario):
+	def gen_intervalos(self,Diccionario):
 
 		Minimo=min(Diccionario.keys())
 		Maximo=max(Diccionario.keys())
@@ -329,15 +334,28 @@ class Apuestas:
 		plt.savefig('predicciones/'+Local+'-'+Visitante+' ' + str(timestamp)+'.png',dpi=300)
 		plt.show()
 
-	def RegresionLineal(df,datos):
+	def make_noise(self):
+
+		n=100
+		var=0.075
+		Ganados_L=R.normal(self.Equipo_Local['Total_Partidos_Ganados_Local']/self.Equipo_Local['Total_Partidos_Local'], var, n).tolist()
+		Ganados_V=R.normal(self.Equipo_Visitante['Total_Partidos_Ganados_Visitante']/self.Equipo_Visitante['Total_Partidos_Visitante'], var, n).tolist()
+		Goles_L=R.normal(self.Equipo_Local['Total_Goles_Local']/self.Equipo_Local['Total_Partidos_Local'], var, n).tolist()
+		Goles_V=R.normal(self.Equipo_Visitante['Total_Goles_Visitante']/self.Equipo_Visitante['Total_Partidos_Visitante'], var, n).tolist()
+
+		ruido = list(zip(Ganados_L,Ganados_V,Goles_L,Goles_V))
+		return ruido
+
+	def RegresionLineal(self,datos):
 
 		#Creo el modelo lineal 
 
-		from sklearn import linear_model
+		df=self.Model_Data
+		
 		regr = linear_model.LinearRegression()
 		# x = np.asanyarray(train[['Ganados_L','Empatados_L','Perdidos_L','Ganados_V','Empatados_V','Perdidos_V','Goles_L','Goles_V']])
-		x = np.asanyarray(df[['Ganados_L','Ganados_V','Goles_L','Goles_V']])
-		y = np.asanyarray(df[['TotalGoles']])
+		x = asr(df[['Ganados_L','Ganados_V','Goles_L','Goles_V']])
+		y = asr(df[['TotalGoles']])
 		regr.fit (x, y)
 		# The coefficients
 		# print ('Coefficients: ', regr.coef_)
@@ -519,9 +537,9 @@ class Apuestas:
 					],
 
 					[
-						self.Equipo_Visitante['Total_Partidos_Visitante']/self.Equipo_Visitante['Total_Partidos_Visitante'],
+						self.Equipo_Visitante['Total_Partidos_Ganados_Visitante']/self.Equipo_Visitante['Total_Partidos_Visitante'],
 						self.Equipo_Visitante['Total_Goles_Visitante']/self.Equipo_Visitante['Total_Partidos_Visitante']
-					],
+					]
 				]
 
 		JL=(df.groupby(['season','localTeam']).agg('count'))
@@ -583,8 +601,6 @@ class Apuestas:
 			distancia=LA.norm(ARR(Parametros)-ARR(v2))/Norma
 			datos.append([distancia,GolesLocal+GolesVisistante])
 		datos.sort()
-		print(datos[:10])
-		
 		
 		result={}
 		total=0

@@ -29,8 +29,24 @@ if Predecir:
 		A.DatosModelo()
 
 
-		similares=A.KNN()
+		similares=A.KNN() # No se porque razon aparecen todos muy distantes
 
+		ruido=A.make_noise()
+
+		resultados={}
+		for i in range(len(ruido)):
+			TotalGoles=A.RegresionLineal(ruido[i])
+			# print(TotalGoles,[Ganados_L[i],Ganados_V[i],Goles_L[i],Goles_V[i]])
+			t=round(TotalGoles.item(),1)
+			if resultados.get(t)==None:
+				resultados[t]=1
+			else:
+				resultados[t]+=+1
+
+		Intervalos=A.gen_intervalos(resultados) #Intervalos para predicciones ML
+		if similares[0]:
+			Intervalos2=Apuestas.gen_intervalos(similares[0]) #Intervalos para partidos similares
+		else:Intervalos2=[]
 		pass
 exit()
 #Obtengo datos de los equipos
@@ -54,30 +70,9 @@ similares=Apuestas.KNN(df,ParametrosEntrada)
 Warning.append(similares[1])
 #Genero Ruido
 
-n=100
-var=0.075
-Ganados_L=np.random.normal(ParametrosEntrada[0][0], var, n).tolist()
-Ganados_V=np.random.normal(ParametrosEntrada[1][0], var, n).tolist()
-Goles_L=np.random.normal(ParametrosEntrada[0][1], var, n).tolist()
-Goles_V=np.random.normal(ParametrosEntrada[1][1], var, n).tolist()
-
-
-#Genero modelo y predigo resultado
-resultados={}
-for i in range(n):
-	TotalGoles=Apuestas.RegresionLineal(Estadisticas[0],[Ganados_L[i],Ganados_V[i],Goles_L[i],Goles_V[i]])
-	# print(TotalGoles,[Ganados_L[i],Ganados_V[i],Goles_L[i],Goles_V[i]])
-	t=round(TotalGoles.item(),1)
-	if resultados.get(t)==None:
-		resultados[t]=1
-	else:
-		resultados[t]=resultados[t]+1
 		
 
-Intervalos=Apuestas.gen_intervalos(resultados) #Intervalos para predicciones ML
-if similares[0]:
-	Intervalos2=Apuestas.gen_intervalos(similares[0]) #Intervalos para partidos similares
-else:Intervalos2=[]
+
 
 # print(Intervalos2)
 
