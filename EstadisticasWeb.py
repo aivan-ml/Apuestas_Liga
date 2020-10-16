@@ -26,12 +26,14 @@ def get_data(url):
 	datos=[]
 	for i,x in enumerate(tr_elements):
 		if len(x)>0:
-			# print(x[0].text_content)
+			# print(x[0].text_content())
 			if x[0].text_content()=='Fecha':
+				# print('efectivamente se ha iniciado')
 				inicio=True
-		if inicio==True and len(x)==8:
+		if inicio==True and (len(x)==9 or len(x)==8):
 
 			datos.append([t.text_content() for t in x])
+
 	return datos
 
 def estadisticas(Equipo,url,pos):

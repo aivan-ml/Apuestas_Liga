@@ -1,29 +1,54 @@
 import Apuestas_4 as Apuestas
 import EstadisticasWeb
 import numpy as np
-import main
+# 34-
+import streamlit as st
 
 #Seleciono Equipos
 Warning=[]
-equipos=Apuestas.get_players()
-# print('Los equipos son:',equipos[1:3])
 
+A=Apuestas.Apuestas()
+
+st.header('Predicción de resultados')
+Local=st.selectbox("Equipo local",A.Equipos['Equipo'].to_list())
+Visitante=st.selectbox("Equipo Visitante",A.Equipos['Equipo'].to_list())
+
+st.sidebar.button('Actualizar Datos')
+
+Predecir=st.button('Predecir resultados')
+
+if Predecir:
+
+	A.set_encuentro(Local,Visitante)
+
+	if A.Encuentro_posible==False:
+		st.error('No puede jugar un equipo contra sí mismo!')
+	else:
+		#Obtengo estadisticas de los equipoas
+		A.Estadisticas_Encuentro()
+		A.DatosModelo()
+
+
+		similares=A.KNN()
+
+		pass
+exit()
 #Obtengo datos de los equipos
-urls=[]
+# urls=[]
 
-for equipo in [equipos[1],equipos[1]]:
-	urls.append(Apuestas.getURL(equipo))
+# for equipo in [equipos[1],equipos[1]]:
+# 	urls.append(Apuestas.getURL(equipo))
 	
-ParametrosEntrada=[] # [[%partidos ganados local,media de goles local],[%partidos ganados Visitante,media de goles Visitante]]
-for i,url in enumerate(urls):
-	ParametrosEntrada.append(EstadisticasWeb.estadisticas(equipos[i+1],url[0],i))
+# ParametrosEntrada=[] # [[%partidos ganados local,media de goles local],[%partidos ganados Visitante,media de goles Visitante]]
+# for i,url in enumerate(urls):
+# 	ParametrosEntrada.append(EstadisticasWeb.estadisticas(equipos[i+1],url[0],i))
 	
 	
 #Obtengo historico de los encuentros
 
-Estadisticas=Apuestas.DatosModelo(equipos[3],equipos[1],equipos[2])
-df=Estadisticas[1]
-Warning.append(Estadisticas[2])
+# Estadisticas=Apuestas.DatosModelo(equipos[3],equipos[1],equipos[2])
+# df=Estadisticas[1]
+# Warning.append(Estadisticas[2])
 
 similares=Apuestas.KNN(df,ParametrosEntrada)
 Warning.append(similares[1])
